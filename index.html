@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bilhete Liberado no Telegram</title>
+
+  <script>
+  /* ================================================================
+     CONFIG — edite aqui: link do telegram, pixel, imagens e textos
+     ================================================================ */
+  window.LP_CONFIG = {
+    telegramLink: "https://track.grupojc.cc/track/2e90223d-a001-4d37-98af-38cfe1130925/redirect?utm_campaign=esportiva&c=afd1b367-3f14-4146-bad9-8b3d37182f91",
+    fbPixelId: "1740249916660495",
+    trackBaseUrl: "https://smartico-dashboard-production.up.railway.app/track/f30daf06-f78e-41b3-bb3e-0e34d84773e1",
+    leadApiUrl: "https://track-telegram-production.up.railway.app/api/lead",
+
+    tipsterName: "Tipster",
+    ctaLabel: "PEGAR BILHETE",
+    title: "Bilhete Liberado<br>no Telegram",
+    subtitleHtml: 'Clique no botão e fale comigo no <span class="telegram-blue">Telegram</span> !<br>👇🏻',
+
+    personImage: "https://grupogratuito.website/wp-content/uploads/2026/03/3-1024x1024.png",
+    bgImage: "https://grupogratuito.website/wp-content/uploads/2025/04/rugby-sport-environment-filed.png",
+    badge18Image: "https://grupogratuito.website/wp-content/uploads/2025/01/JOGUE-COM-RESPONSABILIDADE-300x42-1.webp"
+  };
+  </script>
+
+  <script>
+  (function(){
+    var cfg = window.LP_CONFIG;
+    var B = cfg.trackBaseUrl;
+    var k = "_tid";
+    var sid = sessionStorage.getItem(k) || (Math.random().toString(36).slice(2) + Date.now().toString(36));
+    sessionStorage.setItem(k, sid);
+
+    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', cfg.fbPixelId);
+    fbq('track', 'PageView');
+
+    var sp = new URLSearchParams(location.search);
+    var utms = ["utm_source","utm_medium","utm_campaign","utm_content","utm_term"];
+    var utmParams = {};
+    utms.forEach(function(u){ var v = sp.get(u); if (v) utmParams[u] = v; });
+    if (Object.keys(utmParams).length) sessionStorage.setItem("_utms", JSON.stringify(utmParams));
+
+    function getUtms(){ try{ return JSON.parse(sessionStorage.getItem("_utms") || "{}"); } catch(e){ return {}; } }
+
+    function track(type, meta){
+      fetch(B, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ event_type: type, session_id: sid, url: location.href, metadata: Object.assign({}, getUtms(), meta || {}) }),
+        keepalive: true
+      }).catch(function(){});
+    }
+
+    track("pageview");
+
+    function wireButtons(){
+      document.querySelectorAll("[data-trackpanel]").forEach(function(el){
+        var originalHref = el.href;
+        var q = new URLSearchParams(getUtms()).toString();
+        if (q) el.href = originalHref + (originalHref.indexOf("?") >= 0 ? "&" : "?") + q;
+
+        el.addEventListener("click", function(e){
+          e.preventDefault();
+          var dest = el.href;
+
+          if (typeof fbq !== "undefined"){
+            var evId = 'tg_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+            var fbp = (document.cookie.match(/_fbp=([^;]+)/) || [])[1] || null;
+            var fbc = (document.cookie.match(/_fbc=([^;]+)/) || [])[1] || null;
+            // Evento 'Lead' = clique com intenção. NÃO usar CompleteRegistration
+            // aqui, pois nenhum cadastro foi de fato concluído nesse ponto —
+            // reportar isso incorretamente ao Meta arrisca banimento de conta
+            // por violação de integridade de eventos.
+            fbq('track', 'Lead', {}, { eventID: evId });
+            fetch(cfg.leadApiUrl, {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({ fbp: fbp, fbc: fbc, userAgent: navigator.userAgent, eventId: evId, externalId: evId }),
+              keepalive: true
+            }).catch(function(){});
+          }
+
+          var ua = navigator.userAgent;
+          var isAndroid = /Android/i.test(ua);
+          var isIOS = /iPhone|iPad|iPod/i.test(ua);
+          var isInApp = /Instagram|FBAN|FBAV/i.test(ua);
+
+          if (isInApp && isAndroid){
+            window.location.href = 'intent://' + dest.replace(/^https?:\/\//, '') + '#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=' + encodeURIComponent(dest) + ';end';
+          } else if (isInApp && isIOS){
+            var ov = document.createElement('div');
+            ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:99999;display:flex;align-items:flex-end;justify-content:center;padding:20px;';
+            ov.innerHTML = '<div style="background:#1a1a1a;border-radius:16px;padding:24px;text-align:center;max-width:340px;width:100%;color:#fff;font-family:sans-serif;"><div style="font-size:32px;margin-bottom:12px;">📲</div><p style="font-weight:700;font-size:16px;margin-bottom:8px;">Abrir no Safari</p><p style="color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:20px;">Toque em <strong style="color:#fff;">⋯</strong> no canto superior direito e selecione <strong style="color:#fff;">"Abrir no Safari"</strong></p><button onclick="this.parentElement.parentElement.remove()" style="background:#333;border:none;color:#fff;padding:12px 28px;border-radius:8px;font-size:14px;cursor:pointer;width:100%;">Fechar</button></div>';
+            document.body.appendChild(ov);
+          } else {
+            window.location.href = dest;
+          }
+        }, true);
+      });
+    }
+
+    if (document.readyState === "loading"){
+      document.addEventListener("DOMContentLoaded", wireButtons);
+    } else {
+      wireButtons();
+    }
+
+    document.addEventListener("click", function(e){
+      var el = e.target;
+      while (el && el !== document.body){
+        if (el.dataset && el.dataset.track){
+          track("click", { label: el.dataset.track, text: el.innerText || "" });
+          return;
+        }
+        if (el.tagName === "BUTTON" || el.tagName === "A"){
+          track("click", { tag: el.tagName, text: el.innerText || "", href: el.href || "" });
+          return;
+        }
+        el = el.parentElement;
+      }
+    }, true);
+  })();
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: #040d04;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: -apple-system, "system-ui", "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    }
+
+    .page-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      flex: 1;
+      padding: 40px 16px 20px;
+    }
+
+    .card {
+      background-color: #040d04;
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: center top;
+      border-radius: 24px;
+      border: 1px solid #5be86b;
+      padding: 30px;
+      width: 100%;
+      max-width: 434px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .card-person-img {
+      width: 100%;
+      max-width: 279px;
+      height: auto;
+      display: block;
+      margin: 0 auto 10px auto;
+    }
+
+    .card-title {
+      color: #ffffff;
+      font-size: 24px;
+      font-weight: 700;
+      text-align: center;
+      line-height: 32px;
+      margin-bottom: 16px;
+    }
+
+    .card-subtitle {
+      color: #ede7e7;
+      font-size: 16px;
+      font-weight: 400;
+      text-align: center;
+      line-height: 24px;
+      margin-bottom: 24px;
+    }
+
+    .card-subtitle .telegram-blue { color: #2AABEE; font-weight: 500; }
+
+    .btn-pegar {
+      display: block;
+      width: 100%;
+      max-width: 320px;
+      background-color: #2AABEE;
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 18px;
+      font-weight: 700;
+      text-align: center;
+      padding: 24px 40px;
+      border-radius: 3px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+
+    .btn-pegar:hover { background-color: #1a90cc; transform: scale(1.02); }
+
+    .badge-18 { display: block; width: 186px; height: auto; margin: 0 auto; opacity: 0.85; }
+
+    footer { width: 100%; text-align: center; padding: 18px 16px 14px; color: #cccccc; font-size: 13px; }
+  </style>
+</head>
+
+<body>
+  <div class="page-wrapper">
+    <div class="card" id="lp-card">
+      <img class="card-person-img" id="lp-person" src="" alt="" />
+      <h2 class="card-title" id="lp-title"></h2>
+      <div class="card-subtitle" id="lp-subtitle"></div>
+      <a class="btn-pegar" id="lp-cta" href="#" target="_blank" rel="noopener noreferrer" data-trackpanel></a>
+      <img class="badge-18" id="lp-badge" src="" alt="Proibido para menores de 18 anos - Jogue com responsabilidade" />
+    </div>
+  </div>
+
+  <footer>
+    <p>Copyright © 2026 – Todos os direitos reservados</p>
+  </footer>
+
+  <script>
+    (function(){
+      var cfg = window.LP_CONFIG;
+      document.getElementById('lp-card').style.backgroundImage = "url('" + cfg.bgImage + "')";
+      document.getElementById('lp-person').src = cfg.personImage;
+      document.getElementById('lp-person').alt = cfg.tipsterName;
+      document.getElementById('lp-title').innerHTML = cfg.title;
+      document.getElementById('lp-subtitle').innerHTML = cfg.subtitleHtml;
+      document.getElementById('lp-cta').href = cfg.telegramLink;
+      document.getElementById('lp-cta').textContent = cfg.ctaLabel;
+      document.getElementById('lp-badge').src = cfg.badge18Image;
+    })();
+  </script>
+</body>
+</html>
